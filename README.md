@@ -1,5 +1,5 @@
 # DW2ETA
-A mod for Distant Worlds 2 that shows the ETA for fleets
+A mod for Distant Worlds 2 that shows the ETA for fleets and ships.
 
 <img src="https://github.com/Stoert/DW2ETA/blob/main/DW2ETA.png" width=25% height=25%>
 
