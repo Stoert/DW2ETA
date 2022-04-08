@@ -56,13 +56,13 @@ public class PatchSelectionPanel
 
 				if (!string.IsNullOrEmpty(valueSuffix))
 				{
-					text2 += GG_Mod.PatchTextHelper.DrawEta(ship.GetGalaxy(), ship, ship.Mission, checkCD: true);
+					text2 += PatchTextHelper.DrawEta(ship.GetGalaxy(), ship, ship.Mission, checkCD: true);
 				}
 				else
 				{
 					// draw ETA
 					if (ship.Mission != null && ship.IsHyperjumping() && ship.GetSpeed() > 0f)
-						text2 += GG_Mod.PatchTextHelper.DrawEta(ship.GetGalaxy(), ship, ship.Mission);
+						text2 += PatchTextHelper.DrawEta(ship.GetGalaxy(), ship, ship.Mission);
 				}
 
 				DrawingHelper.DrawStringDropShadow(spriteBatch, text2, valueFont, __instance.ForeColorResolved, __instance.ShadowColorResolved, position, maximumSize, TextAlignment.Center);

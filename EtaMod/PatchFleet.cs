@@ -45,7 +45,7 @@ public class PatchFleet
 
         if (fleet.LeadShip != null)
         {
-            var countDown = GG_Mod.PatchTextHelper.DrawEta(galaxy, fleet.LeadShip, fleet.LeadShip.Mission, checkCD: true);
+            var countDown = PatchTextHelper.DrawEta(galaxy, fleet.LeadShip, fleet.LeadShip.Mission, checkCD: true);
 
             // draw hyper drive countdown
             if (!String.IsNullOrEmpty(countDown))
@@ -54,7 +54,7 @@ public class PatchFleet
             // draw ETA
             if (fleet.LeadShip.IsHyperjumping() && fleet.LeadShip.GetSpeed() > 0f)
             {
-                var eta = GG_Mod.PatchTextHelper.DrawEta(galaxy, fleet.LeadShip, fleet.LeadShip.Mission);
+                var eta = PatchTextHelper.DrawEta(galaxy, fleet.LeadShip, fleet.LeadShip.Mission);
                 if (!String.IsNullOrEmpty(eta))
                     DrawingHelper.DrawStringDropShadow(spriteBatch, eta, font, fontColor, shadowColor, new Vector2(x, num), new Vector2(textWidth, lineHeight), TextAlignment.Left, out vector);
             }

@@ -3,19 +3,19 @@ using HarmonyLib;
 using JetBrains.Annotations;
 using Xenko.Core.Mathematics;
 
-namespace GG_Mod;
+namespace EtaMod;
 
 [PublicAPI]
 [HarmonyPatch(typeof(TextHelper))]
 public class PatchTextHelper
 {
+
     // Draw ETA for single ship
     [HarmonyPostfix]
     [HarmonyPatch(typeof(TextHelper), "ResolveMissionDescription", new Type[] { typeof(Galaxy), typeof(Empire), typeof(Ship), typeof(ShipMission) })]
     public static void ResolveMissionDescription(Galaxy galaxy, Empire empire, Ship ship, ShipMission mission, ref string __result)
     {
         __result += DrawEta(galaxy, ship, mission, checkCD: true);
-
     }
 
     public static string DrawEta(Galaxy galaxy, Ship ship, ShipMission mission, bool checkCD = false)
@@ -47,7 +47,7 @@ public class PatchTextHelper
                 if (!shipCommand.IsEmpty)
                 {
                     var currentTarget = mission.GetCurrentTarget(galaxy);
-                    if (currentTarget != null && mission.LocationIdPath != null && mission.LocationIdPath.Count > 0)
+                    if (currentTarget != null)
                     {
                         int[] LocatationIdPath = mission.LocationIdPath.ToArray();
                         Point targetPos = new(currentTarget.GalaxyX, currentTarget.GalaxyY);
