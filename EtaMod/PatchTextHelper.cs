@@ -22,7 +22,7 @@ public class PatchTextHelper
     {
         string result = string.Empty;
 
-        if (ship != null && mission != null)
+        if (ship != null && mission != null && galaxy != null)
         {
             if (checkCD)
             {
@@ -49,52 +49,53 @@ public class PatchTextHelper
                     var currentTarget = mission.GetCurrentTarget(galaxy);
                     if (currentTarget != null)
                     {
-                        int[] LocatationIdPath = mission.LocationIdPath.ToArray();
                         Point targetPos = new(currentTarget.GalaxyX, currentTarget.GalaxyY);
-
                         Point shipPos = new(ship.GalaxyX, ship.GalaxyY);
                         double distance = 0f;
                         double arrival = 0f;
                         var progress = (int)mission.LocationPathProgress;
-
                         bool bIsLastWpt = false;
-                        if (progress < LocatationIdPath.Length)
+                        if (mission.LocationIdPath != null)
                         {
-                            Location? lastLocationStop = null;
-                            for (int i = (int)progress; i < LocatationIdPath.Length; i++)
+                            var LocatationIdPath = mission.LocationIdPath.ToArray();
+
+                            if (mission.LocationIdPath != null && progress < LocatationIdPath.Length)
                             {
-                                int id = LocatationIdPath[i];
-                                Location byId = galaxy.Locations.GetById(id);
-                                if (byId != null)
+                                Location? lastLocationStop = null;
+                                for (int i = (int)progress; i < LocatationIdPath.Length; i++)
                                 {
-                                    targetPos = new(byId.GalaxyX, byId.GalaxyY);
-                                    bIsLastWpt = i == LocatationIdPath.Length - 1;
-                                    if (bIsLastWpt)
+                                    int id = LocatationIdPath[i];
+                                    Location byId = galaxy.Locations.GetById(id);
+                                    if (byId != null)
                                     {
-                                        int galaxyX;
-                                        int galaxyY;
-                                        mission.ResolveCommandGalaxyCoordinates(out galaxyX, out galaxyY);
-                                        if (galaxyX >= 0 && galaxyY >= 0)
-                                            targetPos = new(galaxyX, galaxyY);
+                                        targetPos = new(byId.GalaxyX, byId.GalaxyY);
+                                        bIsLastWpt = i == LocatationIdPath.Length - 1;
+                                        if (bIsLastWpt)
+                                        {
+                                            int galaxyX;
+                                            int galaxyY;
+                                            mission.ResolveCommandGalaxyCoordinates(out galaxyX, out galaxyY);
+                                            if (galaxyX >= 0 && galaxyY >= 0)
+                                                targetPos = new(galaxyX, galaxyY);
+                                            else
+                                                targetPos = new(currentTarget.GalaxyX, currentTarget.GalaxyY);
+                                        }
+
+                                        if (lastLocationStop != null && lastLocationStop != byId)
+                                            distance = Math.Sqrt((double)Calculations.CalculateDistanceSquared(lastLocationStop.GalaxyX, lastLocationStop.GalaxyY, targetPos.X, targetPos.Y));
                                         else
-                                            targetPos = new(currentTarget.GalaxyX, currentTarget.GalaxyY);
+                                            distance = Math.Sqrt((double)Calculations.CalculateDistanceSquared(shipPos.X, shipPos.Y, targetPos.X, targetPos.Y));
+
+                                        arrival += Math.Truncate(distance / (double)ship.GetSpeed());
+
+                                        lastLocationStop = byId;
+                                        shipPos = targetPos;
                                     }
-
-                                    if (lastLocationStop != null && lastLocationStop != byId)
-                                        distance = Math.Sqrt((double)Calculations.CalculateDistanceSquared(lastLocationStop.GalaxyX, lastLocationStop.GalaxyY, targetPos.X, targetPos.Y));
-                                    else
-                                        distance = Math.Sqrt((double)Calculations.CalculateDistanceSquared(shipPos.X, shipPos.Y, targetPos.X, targetPos.Y));
-
-                                    arrival += Math.Truncate(distance / (double)ship.GetSpeed());
-
-                                    lastLocationStop = byId;
-                                    shipPos = targetPos;
                                 }
+                                goto lDrawEta;
+
                             }
-                            goto lDrawEta;
-
                         }
-
                         if (mission.PrimaryTargetType == ShipMissionTargetType.GalaxyCoordinates)
                         {
                             targetPos = new(mission.PrimaryGalaxyX, mission.PrimaryGalaxyY);
@@ -105,7 +106,7 @@ public class PatchTextHelper
                         arrival = Math.Truncate(distance / (double)ship.GetSpeed());
 
                         lDrawEta:
-
+            
                         TimeSpan t = TimeSpan.FromSeconds(arrival);
 
                         var eta = t.ToString(@"mm\:ss");
@@ -128,6 +129,7 @@ public class PatchTextHelper
                 }
             }
         }
+
         return result;
     }
 }
