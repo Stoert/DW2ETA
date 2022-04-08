@@ -15,14 +15,15 @@ public class PatchTextHelper
     [HarmonyPatch(typeof(TextHelper), "ResolveMissionDescription", new Type[] { typeof(Galaxy), typeof(Empire), typeof(Ship), typeof(ShipMission) })]
     public static void ResolveMissionDescription(Galaxy galaxy, Empire empire, Ship ship, ShipMission mission, ref string __result)
     {
-        __result += DrawEta(galaxy, ship, mission, checkCD: true);
+        if (ship != null)
+            __result += DrawEta(galaxy, ship, mission, checkCD: true);
     }
 
     public static string DrawEta(Galaxy galaxy, Ship ship, ShipMission mission, bool checkCD = false)
     {
         string result = string.Empty;
 
-        if (ship != null && mission != null && galaxy != null)
+        if (ship != null && mission != null && mission.Type != ShipMissionType.Undefined && galaxy != null)
         {
             if (checkCD)
             {
@@ -43,6 +44,7 @@ public class PatchTextHelper
             // draw ETA
             if (ship.IsHyperjumping() && ship.GetSpeed() > 0f)
             {
+                Point shipPos = new(ship.GalaxyX, ship.GalaxyY);
                 ShipCommand shipCommand = mission.ResolveCurrentCommand();
                 if (!shipCommand.IsEmpty)
                 {
@@ -50,7 +52,6 @@ public class PatchTextHelper
                     if (currentTarget != null)
                     {
                         Point targetPos = new(currentTarget.GalaxyX, currentTarget.GalaxyY);
-                        Point shipPos = new(ship.GalaxyX, ship.GalaxyY);
                         double distance = 0f;
                         double arrival = 0f;
                         var progress = (int)mission.LocationPathProgress;
@@ -92,44 +93,66 @@ public class PatchTextHelper
                                         shipPos = targetPos;
                                     }
                                 }
-                                goto lDrawEta;
-
+                                result += getEtaAsString(shipPos, targetPos, ship.GetSpeed(), arrival);
+                                goto lExit;
                             }
                         }
                         if (mission.PrimaryTargetType == ShipMissionTargetType.GalaxyCoordinates)
-                        {
                             targetPos = new(mission.PrimaryGalaxyX, mission.PrimaryGalaxyY);
+                    
+                        result += getEtaAsString(shipPos, targetPos, ship.GetSpeed());
+                        goto lExit;
+                    }
+                    else
+                    {
+                        StellarObject? stellarObject = null;
+                        StellarObject? stellarObject2 = null;
+                        Fleet? fleet = null;
+                        Fleet? fleet2 = null;
+                        Fleet? missionTargetFleet = null;
+                        int galaxyX;
+                        int galaxyY;
+                        var missionTarget = mission.DetermineMissionTarget(galaxy, shipCommand, out galaxyX, out galaxyY, out missionTargetFleet, ref stellarObject, ref stellarObject2, ref fleet, ref fleet2);
+                        if (missionTargetFleet != null)
+                        {
+                            Ship targetShip = missionTargetFleet.LeadShip;
+                            if (targetShip != null)
+                            {
+                                Point targetPos = new(targetShip.GalaxyX, targetShip.GalaxyY);
+                                result += getEtaAsString(shipPos, targetPos, ship.GetSpeed());
+                            }
                         }
-
-                        shipPos = new Point(ship.GalaxyX, ship.GalaxyY);
-                        distance = Math.Sqrt((double)Calculations.CalculateDistanceSquared(shipPos.X, shipPos.Y, targetPos.X, targetPos.Y));
-                        arrival = Math.Truncate(distance / (double)ship.GetSpeed());
-
-                        lDrawEta:
-            
-                        TimeSpan t = TimeSpan.FromSeconds(arrival);
-
-                        var eta = t.ToString(@"mm\:ss");
-                        if (t.Days > 0)
-                            eta = t.ToString(@"d.hh\:mm\:ss");
-                        else if (t.Hours > 0)
-                            eta = t.ToString(@"hh\:mm\:ss");
-
-                        if (eta.Equals("00:00") && currentTarget.IsHyperjumping() && currentTarget.GetSpeed() > 0f)
-                            return "";
-
-                        //var text = " ETA Wpt" + (LocatationIdPath.Length - 1 - progress).ToString() + ": " + eta;
-                        //if (bIsLastWpt)
-                        //    text = " ETA: " + eta;
-
-                        var text = " (ETA: " + eta + ")";
-                        result += text;
-
+                        else if (galaxyX > 0 && galaxyY > 0)
+                        {
+                            Point targetPos = new(galaxyX, galaxyY);
+                            result += getEtaAsString(shipPos, targetPos, ship.GetSpeed());
+                        }
                     }
                 }
             }
         }
-
+    lExit:
         return result;
+    }
+
+    private static string getEtaAsString(Point shipPos, Point targetPos, double shipSpeed, double arrival = 0f)
+    {
+        if (arrival > 0f)
+            goto calcTimeSpan;
+
+        var distance = Math.Sqrt((double)Calculations.CalculateDistanceSquared(shipPos.X, shipPos.Y, targetPos.X, targetPos.Y));
+        arrival = Math.Truncate(distance / shipSpeed);
+
+    calcTimeSpan:
+        TimeSpan t = TimeSpan.FromSeconds(arrival);
+
+        var eta = t.ToString(@"mm\:ss");
+        if (t.Days > 0)
+            eta = t.ToString(@"d.hh\:mm\:ss");
+        else if (t.Hours > 0)
+            eta = t.ToString(@"hh\:mm\:ss");
+
+        var text = " (ETA: " + eta + ")";
+        return text;
     }
 }

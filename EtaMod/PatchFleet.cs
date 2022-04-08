@@ -43,7 +43,7 @@ public class PatchFleet
 
         x += vector.X;
 
-        if (fleet.LeadShip != null)
+        if (fleet.LeadShip != null && fleet.Mission != null && fleet.Mission.Type != ShipMissionType.Undefined)
         {
             var countDown = PatchTextHelper.DrawEta(galaxy, fleet.LeadShip, fleet.LeadShip.Mission, checkCD: true);
 
