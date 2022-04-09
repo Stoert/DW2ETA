@@ -49,14 +49,13 @@ public class PatchFleet
 
             // draw hyper drive countdown
             if (!String.IsNullOrEmpty(countDown))
-                DrawingHelper.DrawStringDropShadow(spriteBatch, countDown, font, fontColor, shadowColor, new Vector2(x, num), new Vector2(textWidth, lineHeight), TextAlignment.Left, out vector);
-
+                DrawingHelper.DrawStringDropShadow(spriteBatch, countDown, UserInterfaceHelper.FontSmall, Color.Gold, new Vector2(x, num));
             // draw ETA
             if (fleet.LeadShip.IsHyperjumping() && fleet.LeadShip.GetSpeed() > 0f)
             {
                 var eta = PatchTextHelper.DrawEta(galaxy, fleet.LeadShip, fleet.LeadShip.Mission);
                 if (!String.IsNullOrEmpty(eta))
-                    DrawingHelper.DrawStringDropShadow(spriteBatch, eta, font, fontColor, shadowColor, new Vector2(x, num), new Vector2(textWidth, lineHeight), TextAlignment.Left, out vector);
+                    DrawingHelper.DrawStringDropShadow(spriteBatch, eta, UserInterfaceHelper.FontSmall, Color.Gold, new Vector2(x, num));
             }
         }
 

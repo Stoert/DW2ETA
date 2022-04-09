@@ -25,6 +25,14 @@ public class PatchTextHelper
 
         if (ship != null && mission != null && mission.Type != ShipMissionType.Undefined && galaxy != null)
         {
+            // no eta for non player ships
+            Empire empire = ship.GetEmpire();
+            if (empire != null && !empire.IsPlayer)
+            {
+                //if (empire.VisibilityMap.DetermineVisibilityTypeForShipAllEmpires(ship, galaxy.Empires.GetPlayer(), galaxy) != VisibilityType.FullyVisible)
+                    goto lExit;
+            }
+                    
             if (checkCD)
             {
                 var countdown = ship.HyperDriveCountdown;
@@ -32,7 +40,12 @@ public class PatchTextHelper
                 // draw hyper-drive countdown
                 if (countdown > 0f)
                 {
-                    string cd = " (" + TextResolver.GetText("Jumping") + ": " + countdown.ToString("0") + ")";
+                    string cd = string.Empty;
+
+                    if (!ship.CheckFightersOnboard())
+                        cd = " (" + TextResolver.GetText("GameTaskType Short FighterRetrieveFighters") + ")";
+                    else
+                        cd = " (" + TextResolver.GetText("Jumping") + ": " + countdown.ToString("0") + ")";
 
                     if (ship.EnemyHyperDenyActive)
                         cd = " (" + TextResolver.GetText("HyperDeny") + " " + TextResolver.GetText("Active").ToLowerInvariant() + ")";

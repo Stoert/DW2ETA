@@ -3,6 +3,6 @@
   "displayName": "ETA - Estimated time of arrival Mod",
   "mainModule": "EtaMod.dll",
   "mainClass": "EtaMod.Mod",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "dependencies": []
 }
